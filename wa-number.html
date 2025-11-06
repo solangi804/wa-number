@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Number Formatter</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #2575fc;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .input-section, .output-section {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #e1e5ee;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #2575fc;
+        }
+        
+        .output-section textarea {
+            background-color: #f8f9fa;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button i {
+            font-size: 18px;
+        }
+        
+        #formatBtn {
+            background-color: #2575fc;
+            color: white;
+        }
+        
+        #formatBtn:hover {
+            background-color: #1a68e8;
+            transform: translateY(-2px);
+        }
+        
+        #copyBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        #copyBtn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        
+        #copyBtn.copied {
+            background-color: #17a2b8;
+        }
+        
+        #copyBtn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #copyBtn:disabled:hover {
+            transform: none;
+        }
+        
+        #clearBtn {
+            background-color: #f1f3f5;
+            color: #495057;
+        }
+        
+        #clearBtn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2575fc;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .info-box h3 {
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 8px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        @media (max-width: 600px) {
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i> Numbers copied to clipboard!
+    </div>
+    
+    <div class="container">
+        <h1>Mobile Number Formatter</h1>
+        <p class="description">Add a '+' sign to all mobile numbers in your text. Paste or type numbers in the input area below.</p>
+        
+        <div class="input-section">
+            <label for="inputText">Input Text:</label>
+            <textarea id="inputText" placeholder="Enter mobile numbers here, one per line or separated by commas...">1234567890
+(987) 654-3210
+00 44 7911 123456
++1-800-555-1234</textarea>
+            <div class="stats">
+                <span id="inputCount">4 numbers detected</span>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="formatBtn">
+                <i class="fas fa-magic"></i> Format Numbers
+            </button>
+            <button id="copyBtn" disabled>
+                <i class="far fa-copy"></i> Copy Formatted
+            </button>
+            <button id="clearBtn">
+                <i class="fas fa-broom"></i> Clear All
+            </button>
+        </div>
+        
+        <div class="output-section">
+            <label for="outputText">Formatted Numbers:</label>
+            <textarea id="outputText" readonly placeholder="Formatted numbers will appear here..."></textarea>
+            <div class="stats">
+                <span id="outputCount">0 numbers formatted</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>How It Works</h3>
+            <ul>
+                <li>Detects phone numbers in various formats (spaces, dashes, parentheses)</li>
+                <li>Adds '+' prefix to all valid mobile numbers</li>
+                <li>Handles multiple numbers separated by commas, spaces, or new lines</li>
+                <li>Preserves the original formatting aside from adding the '+'</li>
+                <li>Copy formatted numbers with one click</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('inputText');
+            const outputText = document.getElementById('outputText');
+            const formatBtn = document.getElementById('formatBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const inputCount = document.getElementById('inputCount');
+            const outputCount = document.getElementById('outputCount');
+            const notification = document.getElementById('notification');
+            
+            // Update input count when text changes
+            inputText.addEventListener('input', function() {
+                updateInputCount();
+                // Clear output when input changes
+                outputText.value = '';
+                updateOutputCount('');
+                updateCopyButtonState();
+            });
+            
+            // Format button click handler
+            formatBtn.addEventListener('click', function() {
+                const input = inputText.value.trim();
+                if (!input) {
+                    showNotification('Please enter some mobile numbers to format.', 'error');
+                    return;
+                }
+                
+                const formattedNumbers = formatMobileNumbers(input);
+                outputText.value = formattedNumbers;
+                updateOutputCount(formattedNumbers);
+                updateCopyButtonState();
+                
+                if (formattedNumbers) {
+                    showNotification('Numbers formatted successfully!', 'success');
+                }
+            });
+            
+            // Copy button click handler
+            copyBtn.addEventListener('click', function() {
+                if (!outputText.value.trim()) {
+                    showNotification('No formatted numbers to copy. Please format some numbers first.', 'error');
+                    return;
+                }
+                
+                outputText.select();
+                outputText.setSelectionRange(0, 99999); // For mobile devices
+                
+                try {
+                    navigator.clipboard.writeText(outputText.value).then(() => {
+                        // Visual feedback
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        copyBtn.classList.add('copied');
+                        
+                        showNotification('Numbers copied to clipboard!', 'success');
+                        
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                        // Fallback for older browsers
+                        document.execCommand('copy');
+                        showNotification('Numbers copied to clipboard!', 'success');
+                    });
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    document.execCommand('copy');
+                    showNotification('Numbers copied to clipboard!', 'success');
+                }
+            });
+            
+            // Clear button click handler
+            clearBtn.addEventListener('click', function() {
+                inputText.value = '';
+                outputText.value = '';
+                updateInputCount();
+                updateOutputCount('');
+                updateCopyButtonState();
+                showNotification('All fields cleared!', 'info');
+            });
+            
+            // Function to format mobile numbers
+            function formatMobileNumbers(text) {
+                // Split by common delimiters (comma, newline, space)
+                const potentialNumbers = text.split(/[\n,\s]+/).filter(num => num.trim() !== '');
+                
+                return potentialNumbers.map(num => {
+                    // Remove all non-digit characters except leading '+'
+                    let cleanNumber = num.replace(/[^\d+]/g, '');
+                    
+                    // If the number already starts with '+', return as is
+                    if (cleanNumber.startsWith('+')) {
+                        return cleanNumber;
+                    }
+                    
+                    // If the number starts with '00', replace with '+'
+                    if (cleanNumber.startsWith('00')) {
+                        cleanNumber = '+' + cleanNumber.substring(2);
+                    }
+                    
+                    // For numbers without any prefix, add '+'
+                    if (!cleanNumber.startsWith('+')) {
+                        cleanNumber = '+' + cleanNumber;
+                    }
+                    
+                    return cleanNumber;
+                }).join('\n');
+            }
+            
+            // Update input count
+            function updateInputCount() {
+                const text = inputText.value.trim();
+                if (!text) {
+                    inputCount.textContent = '0 numbers detected';
+                    return;
+                }
+                
+                const numbers = text.split(/[\n,\s]+/).filter(num => num.trim() !== '');
+                inputCount.textContent = `${numbers.length} number${numbers.length !== 1 ? 's' : ''} detected`;
+            }
+            
+            // Update output count
+            function updateOutputCount(text) {
+                if (!text) {
+                    outputCount.textContent = '0 numbers formatted';
+                    return;
+                }
+                
+                const numbers = text.split('\n').filter(num => num.trim() !== '');
+                outputCount.textContent = `${numbers.length} number${numbers.length !== 1 ? 's' : ''} formatted`;
+            }
+            
+            // Update copy button state
+            function updateCopyButtonState() {
+                copyBtn.disabled = !outputText.value.trim();
+            }
+            
+            // Show notification
+            function showNotification(message, type) {
+                notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+                
+                // Set background color based on type
+                if (type === 'success') {
+                    notification.style.backgroundColor = '#28a745';
+                } else if (type === 'error') {
+                    notification.style.backgroundColor = '#dc3545';
+                } else {
+                    notification.style.backgroundColor = '#17a2b8';
+                }
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Initialize counts
+            updateInputCount();
+            updateOutputCount('');
+            updateCopyButtonState();
+        });
+    </script>
+</body>
+</html>
